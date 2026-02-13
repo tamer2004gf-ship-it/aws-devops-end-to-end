@@ -1,0 +1,48 @@
+# #خليت شات تبع جوجل يفهني اياه واخذت الكود منه بعد تعديل
+name: Test on Pull Request
+
+on:
+  pull_request:
+    branches: [ main, master ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install flake8 bandit pytest pytest-cov flask
+          if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+
+      - name: Lint with flake8
+        run: |
+          # فحص الأخطاء المصنعية فقط (Syntax)
+          flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
+
+      - name: Run Tests & Check Coverage
+        run: |
+          # تعيين المسار ليفهم بايثون مكان الملفات
+          export PYTHONPATH=$PYTHONPATH:$(pwd)/mini-project1/app
+          
+          # تشغيل الاختبارات وإخراج التقرير
+          pytest --cov=mini-project1/app mini-project1/app/tests/ --cov-report=term-missing > coverage.txt
+          cat coverage.txt
+          
+          # استخراج النسبة والتأكد من نجاح الاختبارات
+          COVERAGE=$(grep 'TOTAL' coverage.txt | awk '{print $NF}' | sed 's/%//')
+          echo "Total Coverage: $COVERAGE%"
+          
+          if [ "$COVERAGE" -lt 80 ]; then
+            echo "❌ Coverage is below 80%"
+            exit 1
+          fi
