@@ -1,4 +1,4 @@
-# خليت شات تبع جوجل يفهني اياه واخذت الكود منه بعد تعديل
+# #خليت شات تبع جوجل يفهني اياه واخذت الكود منه بعد تعديل
 name: Test on Pull Request
 
 on:
@@ -17,7 +17,7 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: '3.11'
-#لثبيت الاشياء يعني هيك اتوقع ببقى اسال نعيم
+
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
