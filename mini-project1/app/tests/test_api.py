@@ -1,18 +1,22 @@
 """
 Integration tests for Todo API endpoints
 """
-
 import pytest
 import json
-from main import app
+import sys
+import os
 
+
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
+from main import app 
 
 @pytest.fixture
 def client():
-    """Create a test client for the Flask app"""
     app.config['TESTING'] = True
     with app.test_client() as client:
         yield client
+
 
 
 class TestAPIEndpoints:
