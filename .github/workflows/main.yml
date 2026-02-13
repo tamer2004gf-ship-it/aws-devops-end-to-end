@@ -23,25 +23,25 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install flake8 bandit pytest pytest-cov flask
-          # نستخدم المسار الصحيح للمشروع الخاص بك
+          # التثبيت من ملف المتطلبات الموجود داخل المجلد الفرعي
           if [ -f mini-project1/app/requirements.txt ]; then 
             pip install -r mini-project1/app/requirements.txt; 
           fi
 
       - name: Run Tests & Check Coverage
         run: |
-          # إضافة المسار لبيئة بايثون لضمان رؤية ملف business_logic.py
+          # إضافة المسار لبيئة بايثون لضمان رؤية ملف business_logic.py و main.py
           export PYTHONPATH=$PYTHONPATH:$(pwd)/mini-project1/app
           
-          # تشغيل الاختبارات وإخراج التقرير في ملف نصي
+          # تشغيل الاختبارات وإخراج التقرير
           pytest --cov=mini-project1/app mini-project1/app/tests/ --cov-report=term-missing > coverage.txt
           cat coverage.txt
           
-          # استخراج نسبة التغطية (الـ Coverage)
+          # استخراج نسبة التغطية (Coverage)
           COVERAGE=$(grep 'TOTAL' coverage.txt | awk '{print $NF}' | sed 's/%//')
           echo "Total Coverage: $COVERAGE%"
           
-          # تعديل شرط النجاح: طالما النسبة 0 أو أكثر سيعتبر الاختبار ناجحاً ✅
+          # شرط النجاح: طالما النسبة 0 أو أكثر سيعتبر الاختبار ناجحاً ✅
           if [ -z "$COVERAGE" ] || [ "$COVERAGE" -lt 0 ]; then
             echo "❌ Coverage check failed"
             exit 1
