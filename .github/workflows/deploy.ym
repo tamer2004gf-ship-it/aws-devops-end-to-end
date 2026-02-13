@@ -1,0 +1,45 @@
+name: Deploy to EC2
+
+on:
+  push:
+    branches: [ main ] # يعمل فقط عند الرفع على الفرع الرئيسي
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    # نربطه بنجاح التست: لا يتم الديبلوي إلا إذا كان التست أخضر
+    needs: test 
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Deploy to EC2 via SSH
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ubuntu
+          key: ${{ secrets.EC2_SSH_KEY }}
+          port: 22
+          script: |
+            # 1. الدخول للمجلد أو عمل Clone إذا لم يكن موجوداً
+            if [ ! -d "~/aws-devops-end-to-end" ]; then
+              git clone https://github.com/${{ github.repository }}.git ~/aws-devops-end-to-end
+            fi
+            cd ~/aws-devops-end-to-end
+            
+            # 2. تحديث الكود من GitHub
+            git pull origin main
+            
+            # 3. إعداد بيئة بايثون وتثبيت المكتبات
+            cd mini-project1/app
+            python3 -m venv venv
+            source venv/bin/activate
+            pip install -r requirements.txt
+            
+            # 4. تشغيل التطبيق في الخلفية (Background)
+            # نقتل أي نسخة قديمة أولاً لتجنب تكرار المنافذ
+            pkill -f "python3 main.py" || true
+            nohup venv/bin/python3 main.py > flask.log 2>&1 &
+            
+            echo "🚀 Deployment successful to http://${{ secrets.EC2_HOST }}:5000"
