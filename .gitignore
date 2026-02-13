@@ -1,0 +1,18 @@
+# Terraform
+.terraform/
+*.tfstate
+*.tfstate.*
+terraform.tfvars
+*.pem
+
+# Python
+__pycache__/
+*.py[cod]
+venv/
+.pytest_cache/
+.coverage
+*.egg-info/
+
+# OS
+.DS_Store
+Thumbs.db

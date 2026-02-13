@@ -1,0 +1,62 @@
+name: Deploy to EC2
+
+on:
+  push:
+    branches: [ main ] 
+
+jobs:
+  test-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+    
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      
+      - name: Run Tests before deployment
+        run: |
+          python -m pip install --upgrade pip
+          pip install pytest pytest-cov flask
+          # إضافة المسار لبيئة بايثون ليعرف مكان الملفات
+          export PYTHONPATH=$PYTHONPATH:$(pwd)/mini-project1/app
+          pytest mini-project1/app/tests/
+
+      
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }} 
+
+      
+      - name: Deploy to EC2 via SSH
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.EC2_HOST }}      # : 3.85.115.127 IPV4
+          username: ${{ secrets.EC2_USERNAME }} #  ec2-user
+          key: ${{ secrets.EC2_SSH_KEY }}    # PEM
+          script: |
+            # الدخول لمجلد المشروع وتحديث الكود
+            cd ~/project_29.12.25 || exit 1
+            git pull origin main
+            
+            # تحديث المكتبات في البيئة الافتراضية
+            cd mini-project1/app
+            source ../venv/bin/activate
+            pip install -r requirements.txt
+            
+            # إعادة تشغيل الخدمة عبر Systemd
+            sudo systemctl restart myapp.service
+
+      
+      - name: Health Check
+        run: |
+          echo "Waiting for app to start..."
+          sleep 10
+          curl --fail http://${{ secrets.EC2_HOST }}:5000/health || exit 1
+
+      - name: Notify Status
+        if: always()
+        run: |
+          echo "Deployment Status: ${{ job.status }}"
