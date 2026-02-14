@@ -1,7 +1,7 @@
 # Todo API: End-to-End DevOps Pipeline
 
 This project demonstrates a complete software lifecycle, from local development to automated deployment on AWS. The primary focus was building a robust, production-ready environment that leverages automation to ensure code quality and deployment speed.
-
+![VPC Architecture Diagram](Image_docker_AWS.png)
 ### 🏗️ Infrastructure Architecture
 The project provisions a highly available AWS deployment using Terraform.
 * **VPC Architecture**: A complete VPC featuring public and private subnets across multiple availability zones.
